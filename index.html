@@ -259,12 +259,43 @@
             align-items: center;
         }
 
-        #chessBoard {
+        .board-wrapper {
             display: grid;
-            grid-template-columns: repeat(8, 70px);
-            grid-template-rows: repeat(8, 70px);
+            grid-template-columns: 30px repeat(8, 70px);
+            grid-template-rows: repeat(8, 70px) 30px;
+            gap: 0;
             border: 3px solid #333;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background: #333;
+            width: fit-content;
+        }
+
+        .row-label, .col-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            background: white;
+        }
+
+        .corner {
+            grid-column: 1;
+            grid-row: 9;
+            background: white;
+        }
+
+        .row-label {
+            grid-column: 1;
+        }
+
+        .col-label {
+            grid-row: 9;
+        }
+
+        #chessBoard {
+            display: contents;
         }
 
         .square {
@@ -424,7 +455,31 @@
 
             <!-- Center: Chess Board -->
             <div class="chess-board-container">
-                <div id="chessBoard"></div>
+                <div class="board-wrapper">
+                    <!-- Row labels (8-1) -->
+                    <div class="row-label" style="grid-row: 1;">8</div>
+                    <div class="row-label" style="grid-row: 2;">7</div>
+                    <div class="row-label" style="grid-row: 3;">6</div>
+                    <div class="row-label" style="grid-row: 4;">5</div>
+                    <div class="row-label" style="grid-row: 5;">4</div>
+                    <div class="row-label" style="grid-row: 6;">3</div>
+                    <div class="row-label" style="grid-row: 7;">2</div>
+                    <div class="row-label" style="grid-row: 8;">1</div>
+                    
+                    <!-- Chess board squares -->
+                    <div id="chessBoard"></div>
+                    
+                    <!-- Column labels (a-h) -->
+                    <div class="corner"></div>
+                    <div class="col-label" style="grid-column: 2;">a</div>
+                    <div class="col-label" style="grid-column: 3;">b</div>
+                    <div class="col-label" style="grid-column: 4;">c</div>
+                    <div class="col-label" style="grid-column: 5;">d</div>
+                    <div class="col-label" style="grid-column: 6;">e</div>
+                    <div class="col-label" style="grid-column: 7;">f</div>
+                    <div class="col-label" style="grid-column: 8;">g</div>
+                    <div class="col-label" style="grid-column: 9;">h</div>
+                </div>
                 <div class="controls">
                     <button onclick="getHint()">💡 Get Hint</button>
                     <button onclick="undoMove()">↩️ Undo Move</button>
@@ -506,6 +561,8 @@
                     square.dataset.row = row;
                     square.dataset.col = col;
                     square.textContent = pieces[board[row][col]] || '';
+                    square.style.gridColumn = col + 2; // Offset by 1 for row labels
+                    square.style.gridRow = row + 1;
                     square.addEventListener('click', handleSquareClick);
                     boardElement.appendChild(square);
                 }
@@ -1084,9 +1141,12 @@
                 const [fromRow, fromCol, toRow, toCol] = result.move;
                 clearHighlights();
                 
-                const squares = document.querySelectorAll('.square');
-                squares[fromRow * 8 + fromCol].classList.add('hint');
-                squares[toRow * 8 + toCol].classList.add('hint');
+                const squares = Array.from(document.querySelectorAll('.square'));
+                const fromSquare = squares.find(s => s.dataset.row == fromRow && s.dataset.col == fromCol);
+                const toSquare = squares.find(s => s.dataset.row == toRow && s.dataset.col == toCol);
+                
+                if (fromSquare) fromSquare.classList.add('hint');
+                if (toSquare) toSquare.classList.add('hint');
                 
                 displayAIAnalysis(result, 2);
                 
@@ -1360,22 +1420,26 @@
 
         function highlightSquare(row, col) {
             clearHighlights();
-            const squares = document.querySelectorAll('.square');
-            squares[row * 8 + col].classList.add('selected');
+            const squares = Array.from(document.querySelectorAll('.square'));
+            const square = squares.find(s => s.dataset.row == row && s.dataset.col == col);
+            if (square) square.classList.add('selected');
         }
 
         function highlightValidMoves(row, col) {
             const moves = getValidMoves(row, col);
-            const squares = document.querySelectorAll('.square');
+            const squares = Array.from(document.querySelectorAll('.square'));
             moves.forEach(([r, c]) => {
-                squares[r * 8 + c].classList.add('valid-move');
+                const square = squares.find(s => s.dataset.row == r && s.dataset.col == c);
+                if (square) square.classList.add('valid-move');
             });
         }
 
         function highlightLastMove(fromRow, fromCol, toRow, toCol) {
-            const squares = document.querySelectorAll('.square');
-            squares[fromRow * 8 + fromCol].classList.add('last-move');
-            squares[toRow * 8 + toCol].classList.add('last-move');
+            const squares = Array.from(document.querySelectorAll('.square'));
+            const fromSquare = squares.find(s => s.dataset.row == fromRow && s.dataset.col == fromCol);
+            const toSquare = squares.find(s => s.dataset.row == toRow && s.dataset.col == toCol);
+            if (fromSquare) fromSquare.classList.add('last-move');
+            if (toSquare) toSquare.classList.add('last-move');
         }
 
         function clearHighlights() {
