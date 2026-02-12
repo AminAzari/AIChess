@@ -2,7 +2,7 @@
 
 An interactive chess game with detailed AI analysis designed for learning chess strategy and understanding how chess engines think.
 
-![Chess Game Screenshot](screenshot.png)
+aichessai.netlify.app
 
 ## Features
 
